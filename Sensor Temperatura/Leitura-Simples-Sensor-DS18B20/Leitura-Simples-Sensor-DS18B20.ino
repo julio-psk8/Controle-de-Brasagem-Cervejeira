@@ -1,7 +1,7 @@
 /* ========================================================================================================
        Sensor de Temperatura DS18B20 Dallas
        
-            LEITURA SIMPLES DO SENSOR
+            ACIONAMENTO DE RELE POR TEMPERATURA
     
    Autor: julio 23-11-2023
    
@@ -24,13 +24,14 @@
 // ========================================================================================================
 // --- Constantes Auxiliares ---
 #define ONE_WIRE_BUS 10
+#define rele 7
 
 
 // ========================================================================================================
 // --- Declaração de Objetos ---
 OneWire oneWire(ONE_WIRE_BUS);
 DallasTemperature sensors(&oneWire);
-DeviceAddress insideThermometer = { 0x28, 0x27, 0x1D, 0x57, 0x04, 0xE1, 0x3C, 0xD1};
+DeviceAddress insideThermometer{ 0x28, 0x27, 0x1D, 0x57, 0x04, 0xE1, 0x3C, 0xD1 };
 
 
 // ========================================================================================================
@@ -40,59 +41,43 @@ void printTemperature(DeviceAddress deviceAddress);
 
 // ========================================================================================================
 // --- Configurações Iniciais ---
-void setup()
-{
- 
-  Serial.begin(9600);   //inicializa comunicação serial
- 
-  sensors.begin();      //inicializa sensores
- 
-  sensors.setResolution(insideThermometer, 10); //configura para resolução de 10 bits
- 
-} //end setup
+void setup() {
+
+  Serial.begin(9600);  //inicializa comunicação serial
+
+  sensors.begin();  //inicializa sensores
+
+  sensors.setResolution(insideThermometer, 10);  //configura para resolução de 10 bits
+
+}  //end setup
 
 
 // ========================================================================================================
 // --- Loop Infinito ---
-void loop(void)
-{ 
-  
+void loop(void) {
+  pinMode(rele, OUTPUT);
   Serial.println("Sensor DS18B20");
-  sensors.requestTemperatures();  // inicialisa a leitura do sensor
-  printTemperature(insideThermometer);   // função para imprecao de temperatura do sensor
-  
-  
+  sensors.requestTemperatures();        // inicialisa a leitura do sensor
+  printTemperature(insideThermometer);  // função para imprecao de temperatura do sensor
+
+
   delay(1000);
-  
-} //end loop
+
+}  //end loop
 
 
 // ========================================================================================================
 // --- Desenvolvimento das Funções ---
-void printTemperature(DeviceAddress deviceAddress)
-{
-  float tempC = sensors.getTempC(deviceAddress);
-  if (tempC == -127.00) 
-  {
-    Serial.print("Erro de leitura");
-  } 
-  else 
-  {
-    Serial.print(tempC);
-    Serial.print(" graus C ");
-    Serial.print("  |  ");
-    Serial.print(DallasTemperature::toFahrenheit(tempC));
-    Serial.print(" graus F ");
-  }
+void printTemperature(DeviceAddress deviceAddress) {
+  float tempC = sensors.getTempC(deviceAddress);  // variavel para imprimir a tenperatura em graus celcius
 
+
+  Serial.print(tempC);
+  if (tempC <= 65)
+    digitalWrite(rele, HIGH);
+  else
+
+    digitalWrite(rele, LOW);
   Serial.print("\n\r");
-  
-} //end printTemperature
 
-
-
-
-
-
-
-
+}  //end printTemperature
